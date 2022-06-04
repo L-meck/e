@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.ethic">
+    package="com.larotech.ethic">
    <application
         android:label="ethic"
         android:name="${applicationName}"

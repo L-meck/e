@@ -1,115 +1,389 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
-void main() {
-  runApp(const MyApp());
+import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:ethic/assetAudioPlayerIcons.dart';
+import 'package:ethic/empty.dart';
+import 'package:ethic/positionSeek.dart';
+import 'package:ethic/songSelector.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_neumorphic/flutter_neumorphic.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+Future<void> main() {// async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // await Firebase.initializeApp();
+  AssetsAudioPlayer.setupNotificationsOpenAction((notification) {
+    print(notification.audioId);
+    return true;
+  });
+  runApp(
+    NeumorphicTheme(
+      theme: const NeumorphicThemeData(
+        intensity: 0.8,
+        lightSource: LightSource.topLeft,
+      ),
+      child: AssetsChecker(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class AssetsChecker extends StatefulWidget {
+  const AssetsChecker({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
+  @override
+  _AssetsCheckerState createState() => _AssetsCheckerState();
+}
+
+class _AssetsCheckerState extends State<AssetsChecker> {
+  final audios = <Audio>[
+    Audio(
+      "assets/music/daktari.mp3",
+      metas: Metas(
+        id: "3:10",
+        artist: "Ethic Entertainment",
+        title: "Daktari",
+        image: MetasImage.asset("assets/ethicd.jpg"),
+      ),
+    ),
+    Audio(
+      "assets/music/chapa.mp3",
+      metas: Metas(
+        id: "2:53",
+        artist: "Ethic Entertainment",
+        title: "Chapa",
+        image: MetasImage.asset("assets/ethic2.jpg"),
+      ),
+    ),
+
+    Audio(
+      "assets/music/figa.mp3",
+      metas: Metas(
+        id: "3:06",
+        artist: "Ethic Entertainment",
+        title: "Figa",
+        image: MetasImage.asset("assets/ethicfiga.jpg"),
+      ),
+    ),
+    Audio(
+      "assets/music/figak.mp3",
+      metas: Metas(
+        id: "3:12",
+        artist: "Ethic Entertainment",
+        title: "Figa Remix ft Konshens",
+        image: MetasImage.asset("assets/ethicfigra.jpg"),
+      ),
+    ),
+
+    Audio(
+      "assets/music/instagram.mp3",
+      metas: Metas(
+        id: "3:31",
+        artist: "Ethic Entertainment",
+        title: "Instagram",
+        image: MetasImage.asset("assets/ethic2.jpg"),
+      ),
+    ),
+    Audio(
+      "assets/music/lambalolo.mp3",
+      metas: Metas(
+        id: "3:12",
+        artist: "Ethic Entertainment",
+        title: "Lambalolo",
+        image: MetasImage.asset("assets/ethic.jpg"),
+      ),
+    ),
+    Audio(
+      "assets/music/maji.mp3",
+      metas: Metas(
+        id: "3:02",
+        artist: "Ethic Entertainment",
+        title: "Maji",
+        image: MetasImage.asset("assets/ethic2.jpg"),
+      ),
+    ),
+    Audio(
+      "assets/music/pandana.mp3",
+      metas: Metas(
+        id: "2:57",
+        artist: "Ethic Entertainment",
+        title: "Pandana",
+        image: MetasImage.asset("assets/ethic2.jpg"),
+      ),
+    ),
+    Audio(
+      "assets/music/position.mp3",
+      metas: Metas(
+        id: "3:12",
+        artist: "Ethic Entertainment",
+        title: "Position",
+        image: MetasImage.asset("assets/ethic2.jpg"),
+      ),
+    ),
+    Audio(
+      "assets/music/quarantei.mp3",
+      metas: Metas(
+        id: "2:54",
+        artist: "Ethic Entertainment",
+        title: "Quarantei",
+        image: MetasImage.asset("assets/ethic2.jpg"),
+      ),
+    ),
+    Audio(
+      "assets/music/saba.mp3",
+      metas: Metas(
+        id: "2:55",
+        artist: "Ethic Entertainment",
+        title: "Saba",
+        image: MetasImage.asset("assets/ethic2.jpg"),
+      ),
+    ),
+    Audio(
+      "assets/music/soko.mp3",
+      metas: Metas(
+        id: "3:20",
+        artist: "Ethic Entertainment",
+        title: "Soko",
+        image: MetasImage.asset("assets/ethicsoko.jpg"),
+      ),
+    ),
+    Audio(
+      "assets/music/tarimbo.mp3",
+      metas: Metas(
+        id: "2:55",
+        artist: "Ethic Entertainment",
+        title: "Tarimbo",
+        image: MetasImage.asset("assets/ethic2.jpg"),
+      ),
+    ),
+    Audio(
+      "assets/music/thao.mp3",
+      metas: Metas(
+        id: "3:27",
+        artist: "Ethic Entertainment",
+        title: "Thao",
+        image: MetasImage.asset("assets/ethicj.png"),
+      ),
+    ),
+  ];
+
+  // final AssetsAudioPlayer _assetsAudioPlayer = AssetsAudioPlayer();
+  AssetsAudioPlayer get _assetsAudioPlayer => AssetsAudioPlayer.withId("music");
+  final List<StreamSubscription> _subscriptions = [];
+
+  @override
+  void initState() {
+    _subscriptions.add(_assetsAudioPlayer.playlistAudioFinished.listen((data) {
+      print("playlistAudioFinished : $data");
+    }));
+    _subscriptions.add(_assetsAudioPlayer.audioSessionId.listen((sessionId) {
+      print("audioSessionId : $sessionId");
+    }));
+    _subscriptions
+        .add(AssetsAudioPlayer.addNotificationOpenAction((notification) {
+      return false;
+    }));
+
+    super.initState();
+  
+  }
+  @override
+  void dispose() {
+    _assetsAudioPlayer.dispose();
+    print("dispose");
+    super.dispose();
+  }
+
+  Audio find(List<Audio> source, String fromPath) {
+    return source.firstWhere((element) => element.path == fromPath);
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        extendBodyBehindAppBar: true,
+        // backgroundColor: Colors.black12,
+        body: SafeArea(
+          child: ListView(
+            // physics: BouncingScrollPhysics(),
+            children: [
+              Container(
+                child: Column(
+                  children: [
+                    Stack(
+                      overflow: Overflow.visible,
+                      children: [
+                        _assetsAudioPlayer.builderCurrent(
+                            builder: (BuildContext context, Playing playing) {
+                          final myAudio =
+                              find(audios, playing.audio.assetAudioPath);
+                          return Container(
+                            width: 270,
+                            height: 300,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  myAudio.metas.title.toString(),
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Text(
+                                  myAudio.metas.artist.toString(),
+                                  ///////////////////////////////////////////////////////////////////
+                                  style: GoogleFonts.lato(
+                                    color: Colors.white,
+                                    // fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            decoration: BoxDecoration(
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black87,
+                                  offset: Offset(0, 20),
+                                  blurRadius: 30,
+                                  spreadRadius: 0,
+                                ),
+                              ],
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(200),
+                                bottomRight: Radius.circular(200),
+                              ),
+                              image: DecorationImage(
+                                colorFilter: const ColorFilter.mode(
+                                    Colors.black45, BlendMode.multiply),
+                                fit: BoxFit.cover,
+                                image: AssetImage(
+                                  myAudio.metas.image!.path,
+                                ),
+                              ),
+                              // image: DecorationImage(
+                              //   fit: BoxFit.cover,
+                              //   image: AssetImage(
+                              //     myAudio.metas.image.path,
+                              //   ),
+                              // ),
+                            ),
+                          );
+                          // return SizedBox();
+                          return Empty(); /////////////////////image/////////////////////////////////////
+                        }),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // PlayerControlsCenter(),
+              const SizedBox(
+                height: 5,
+              ),
+              //LIST VIEW SECTION
+              _assetsAudioPlayer.builderCurrent(
+                builder: (context, playing) {
+                  if (playing == null) {
+                    return const SizedBox(); /////////////////////seek/////////////////////////////////////
+                  }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+                  return Column(
+                    children: <Widget>[
+                      _assetsAudioPlayer.builderRealtimePlayingInfos(
+                        builder: (context, infos) {
+                          if (infos == null) {
+                            return const SizedBox(); /////////////////////seek/////////////////////////////////////
+                          }
+                          // print("infos: $infos");
+                          return Column(
+                            children: [
+                              PositionSeekWidget(
+                                currentPosition: infos.currentPosition,
+                                duration: infos.duration,
+                                seekTo: (to) {
+                                  _assetsAudioPlayer.seek(to);
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+              //PLAYLIST ALL
+              _assetsAudioPlayer.builderCurrent(
+                builder: (BuildContext context, Playing playing) {
+                  return SongsSelector(
+                    isPlaying: true,
+                    audios: audios,
+                    onPlaylistSelected: (myAudios) {
+                      _assetsAudioPlayer.open(
+                        Playlist(audios: myAudios),
+                        showNotification: true,
+                        headPhoneStrategy:
+                            HeadPhoneStrategy.pauseOnUnplugPlayOnPlug,
+                        audioFocusStrategy: const AudioFocusStrategy.request(
+                          resumeAfterInterruption: true,
+                        ),
+                      );
+                    },
+                    ////////////////////////////////////
+                    onSelected: (myAudio) async {
+                      try {
+                        await _assetsAudioPlayer.open(
+                          myAudio,
+                          autoStart: true,
+                          showNotification: true,
+                          playInBackground: PlayInBackground.enabled,
+                          audioFocusStrategy: const AudioFocusStrategy.request(
+                              resumeAfterInterruption: true,
+                              resumeOthersPlayersAfterDone: true),
+                          headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplug,
+                          notificationSettings: NotificationSettings(
+                            seekBarEnabled: false,
+                            stopEnabled: true,
+                            customStopAction: (player) {
+                              player.stop();
+                            },
+                            prevEnabled: false,
+                            customNextAction: (player) {
+                              player.next();
+                            },
+                            customStopIcon:
+                                AndroidResDrawable(name: "ic_stop_custom"),
+                            customPauseIcon:
+                                AndroidResDrawable(name: "ic_pause_custom"),
+                            customPlayIcon:
+                                AndroidResDrawable(name: "ic_play_custom"),
+                          ),
+                        );
+                      } catch (e) {
+                        print(e);
+                      }
+                    },
+                    playing: playing,
+                  );
+                },
+              ),
+              // Flexible(
+              //   child: Align(
+              //     alignment: Alignment(0, 1),
+              //     child: _currentAd,
+              //   ),
+              //   fit: FlexFit.tight,
+              //   flex: 2,
+              // ),
+            ],
+          ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
